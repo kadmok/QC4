@@ -5,7 +5,7 @@ library(rlist)
 library(tidyverse)
 library(sparklyr)
 
-
+#loop over entire directory of files
 #files<-list.files(path = "evaluation", pattern = NULL, all.files = FALSE,
 #           full.names = FALSE, recursive = FALSE,
 #           ignore.case = FALSE, include.dirs = FALSE,  no.. = FALSE)
@@ -18,6 +18,8 @@ filename<-paste("evaluation/", filename, sep="")
 print(filename)
 begin<-Sys.time()
 readtime<-Sys.time()
+
+#run a single file
 #filename<-'evaluation/zoo_bi.dat'
 
 ncol <- max(count.fields(filename, sep = " "))
@@ -25,7 +27,7 @@ tr<-read.table(filename, header=F, sep=' ', fill=T, col.names=paste0('V', seq_le
 tr[is.na(tr)] <- 0
 
 #_______________________________________________________________-----------------
-#ncol-1 bc last column is na in Takeaki Uno benchmark datasets
+#ncol-1 bc last column is 'na' in Takeaki Uno benchmark datasets
 #maxcol<-max(tr[, ncol-1], na.rm = TRUE)
 maxcol<-max(tr)
 maxrow<-nrow(tr)
@@ -73,38 +75,23 @@ QC1403<-function(ds, covered){
   qc<-Sys.time()
   trues<-which(ds==TRUE, arr.ind = TRUE)
   trues<-cbind(trues, size=c(0))
-  trues<-cbind(trues, suppy=c(0))
-  trues<-cbind(trues, suppx=c(0))
-  #size
+
+  
   qc<-Sys.time()
   nrow<-nrow(trues)
-  
-  cat("num of couples" ,file=outputname,append=TRUE,sep="\n")
-  cat(nrow ,file=outputname,append=TRUE,sep="\n")
-  
-  for (nr in 1:nrow){
-    trues[nr,4]<-sum(ds[trues[nr,1],])
-    trues[nr,5]<-sum(ds[,trues[nr,2]])
-    #trues[nr,3]<-trues[nr,4]*trues[nr,5]
-    #trues[nr,3]<-sum(ds[,trues[nr,2]])* sum(ds[trues[nr,1],])
-        } 
-  #trues<-trues[order(trues[, 3]), ]
-  print("fetchtime")
+
   print(Sys.time()-qc)
   sizetime <- difftime(Sys.time(),qc,units="secs")
-  # cat("fetchtime" ,file=outputname,append=TRUE,sep="\n")
-  # cat(sizetime ,file=outputname,append=TRUE,sep="\n")
   
   qc<-Sys.time()
  # couplestable <- copy_to(sc, trues, overwrite = TRUE) 
+          
+ #Calculate Size value
   for (nr in 1:nrow){
-   # trues[nr,4]<-sum(ds[trues[nr,1],])
-   # trues[nr,5]<-sum(ds[,trues[nr,2]])
-    trues[nr,3]<-trues[nr,4]*trues[nr,5]
-    #trues[nr,3]<-sum(ds[,trues[nr,2]])* sum(ds[trues[nr,1],])
+    trues[nr,3]<-sum(ds[,trues[nr,2]])* sum(ds[trues[nr,1],])
   } 
- # trues<-trues[order(trues[, 3]), ]
-  #print((trues[,-5])[,-4])
+  trues<-trues[order(trues[, 3]), ]
+
 print("sizetime")
 print(Sys.time()-qc)
 sizetime <- difftime(Sys.time(),qc,units="secs")
@@ -133,6 +120,7 @@ cat(sizetime ,file=outputname,append=TRUE,sep="\n")
       # print("EXTS")
       # print(extents)
       
+    #mark as covered
       for(int in intents){
         for( e in extents){
           covered[e, int]<-TRUE
@@ -141,7 +129,7 @@ cat(sizetime ,file=outputname,append=TRUE,sep="\n")
     
   }
 
-  print("concepts")
+  print("num of concepts")
   print(Sys.time()-qc)
   print(numofc)
   concepts <- difftime(Sys.time(),qc,units="secs")
